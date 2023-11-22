@@ -62,25 +62,36 @@ int main(int argc, const char* argv[]) {
 	argc = argc;
 	argv[0] = argv[0];
 
+	const char * i2cDevice = "/dev/i2c-1";
 	rpi_bmi088_init(rpi_bmi,
-			"/dev/i2c-1",
+			i2cDevice,
 			BMI08X_ACCEL_I2C_ADDR_SECONDARY,
 			BMI08X_GYRO_I2C_ADDR_SECONDARY,
 			accel_cfg,
 			gyro_cfg
 			);
 
-	for (;;) {
+	float angleX=0, angleY=0, angleZ=0;
+	int msDelay = 40;
+	float dt = ((float)msDelay)/1000;
+	for (;;) 
+	{
 		tm = rpi_bmi088_get_sensor_time(rpi_bmi);
 		printf("Sensor time: %5u\n",    tm);
 
-		rpi_bmi088_get_accel(rpi_bmi, &x, &y, &z);
-		printf("ACCEL X = %7.2lf mg Y = %7.2lf mg Z = %7.2lf mg\n", x, y, z);
+		//rpi_bmi088_get_accel(rpi_bmi, &x, &y, &z);
+		//printf("ACCEL X = %7.2lf mg Y = %7.2lf mg Z = %7.2lf mg\n", x, y, z);
 
 		rpi_bmi088_get_gyro(rpi_bmi, &x, &y, &z);
-		printf("GYRO  X = %7.2lfdps Y = %7.2lfdps Z = %7.2lfdps\n", x, y, z);
 
-		rpi_bmi->bmi.delay_ms(1000);
+		printf("GYRO  X = %7.2lfdps Y = %7.2lfdps Z = %7.2lfdps\n", x, y, z);
+		angleX += x * dt;
+		angleY += y * dt;
+		angleZ += z * dt;
+
+		printf("GYRO  X = %7.2lfdeg Y = %7.2lfdeg Z = %7.2lfdeg\n", angleX, angleY, angleZ);
+
+		rpi_bmi->bmi.delay_ms(msDelay);
 	}
 	return 0;
 }
